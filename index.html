@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamnna Dupatta Hub | Official Portfolio</title>
+    <!-- Core Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Firebase Services (Compat Version for ease of use in HTML) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            margin: 0; 
+            overflow-x: hidden; 
+            background-color: #FF2EB0; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar { display: none; }
+        
+        .animate-in { 
+            animation: in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; 
+        }
+        @keyframes in {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .bento-card { 
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            cursor: pointer; 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        .bento-card:hover { 
+            transform: translateY(-5px) scale(1.02); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+        }
+        .bento-card:active { transform: scale(0.95); }
+        
+        .success-toast { 
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+        @keyframes slideUp { 
+            from { transform: translateY(100%); opacity: 0; } 
+            to { transform: translateY(0); opacity: 1; } 
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 0 4px rgba(255, 46, 176, 0.1);
+            border-color: #FF2EB0 !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYxhq1itKAuE0Gtk7k2irVXRDOGEKqSJc",
+            authDomain: "tamnnadupattahub-3255c.firebaseapp.com",
+            projectId: "tamnnadupattahub-3255c",
+            storageBucket: "tamnnadupattahub-3255c.firebasestorage.app",
+            messagingSenderId: "976366593432",
+            appId: "1:976366593432:web:bec3655409f620b01ab7ed",
+            measurementId: "G-5KRYTFNLSV"
+        };
+
+        const siteAppId = "tamnna-dupatta-hub-live";
+
+        // Initialize Firebase
+        let db = null;
+        let auth = null;
+        try {
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+        } catch (e) { 
+            console.error("Firebase failed to load. Check your network or config."); 
+        }
+
+        const { useState, useEffect } = React;
+
+        const App = () => {
+            const [view, setView] = useState('portfolio');
+            const [passInput, setPassInput] = useState('');
+            const [error, setError] = useState('');
+            const [isSaving, setIsSaving] = useState(false);
+            const [showSuccess, setShowSuccess] = useState(false);
+            const [isLoading, setIsLoading] = useState(true);
+            
+            // App Links State (Defaults)
+            const [links, setLinks] = useState({
+                new_updates: "https://t.me/+q8sPA5K04JxhZTc1",
+                instagram: "https://www.instagram.com/tamnna_dupatta?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw%3D%3D",
+                google_rate: "https://www.google.com/search?q=Tamnna+Dupatta+Hub",
+                meesho: "https://www.meesho.com/TAMNNACREATION?ms=2",
+                best_seller: "",
+                new_releases: "",
+                culture: "https://tamnna-dupatta-hub2.odoo.com/",
+                amazon: "",
+                flipkart: ""
+            });
+
+            // Authentication & Real-time Database Sync
+            useEffect(() => {
+                if (!auth || !db) return;
+                
+                // Silent auth for DB access
+                auth.signInAnonymously().catch(() => console.log("Standard Access"));
+                
+                // Firestore path segments (6 segments for compliance)
+                const docRef = db.collection('artifacts').doc(siteAppId).collection('public').doc('data').collection('config').doc('settings');
+                
+                const unsubscribe = docRef.onSnapshot(snap => {
+                    if (snap.exists) {
+                        setLinks(prev => ({...prev, ...snap.data()}));
+                    }
+                    setIsLoading(false);
+                }, err => {
+                    console.log("Database sync pending. Ensure Security Rules are Published.");
+                    setIsLoading(false);
+                });
+
+                return () => unsubscribe();
+            }, []);
+
+            const handleAdminLogin = (e) => {
+                e.preventDefault();
+                if (passInput === 'Tamnna@123') {
+                    setView('admin');
+                    setError('');
+                } else {
+                    setError('Wrong Security Password');
+                }
+            };
+
+            const handleSaveChanges = async () => {
+                setIsSaving(true);
+                setError('');
+                try {
+                    const docRef = db.collection('artifacts').doc(siteAppId).collection('public').doc('data').collection('config').doc('settings');
+                    await docRef.set(links);
+                    setShowSuccess(true);
+                    setTimeout(() => {
+                        setShowSuccess(false);
+                        setView('portfolio');
+                        setPassInput('');
+                    }, 2000);
+                } catch (err) {
+                    setError('Save failed: Verify your Security Rules allow Public writes.');
+                    console.error(err);
+                } finally {
+                    setIsSaving(false);
+                }
+            };
+
+            // --- ADMIN LOGIN VIEW ---
+            if (view === 'login') return (
+                <div className="min-h-screen flex items-center justify-center p-6 text-white">
+                    <div className="bg-white/10 backdrop-blur-3xl p-10 rounded-[48px] w-full max-w-sm border border-white/20 shadow-2xl animate-in">
+                        <div className="flex justify-between items-center mb-10">
+                            <h2 className="text-3xl font-black uppercase tracking-tighter">Admin Panel</h2>
+                            <button onClick={() => setView('portfolio')} className="text-2xl hover:opacity-50 transition-opacity">✕</button>
+                        </div>
+                        <form onSubmit={handleAdminLogin} className="space-y-8">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-2 opacity-50">Enter Admin Key</label>
+                                <input 
+                                    type="password" 
+                                    className="w-full bg-white/10 border-2 border-white/5 rounded-3xl py-5 px-8 outline-none focus:border-yellow-300 transition-all text-center text-xl tracking-widest"
+                                    value={passInput}
+                                    onChange={(e) => setPassInput(e.target.value)}
+                                    autoFocus
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                            {error && <p className="text-yellow-300 text-center font-bold text-xs uppercase animate-pulse">{error}</p>}
+                            <button className="w-full bg-yellow-300 text-pink-600 font-black py-5 rounded-3xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all text-lg tracking-tight">
+                                OPEN EDITOR
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+
+            // --- ADMIN EDITOR VIEW ---
+            if (view === 'admin') return (
+                <div className="min-h-screen bg-[#F8FAFC] p-6 font-sans">
+                    <div className="max-w-md mx-auto pb-40">
+                        <div className="flex justify-between items-center mb-12">
+                            <div>
+                                <h1 className="text-4xl font-black text-pink-600 uppercase leading-none tracking-tighter">Edit<br/>Links</h1>
+                                <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-[0.2em]">Management Dashboard</p>
+                            </div>
+                            <button onClick={() => setView('portfolio')} className="bg-white p-4 rounded-3xl shadow-sm text-slate-400 hover:text-red-500 transition-colors">✕</button>
+                        </div>
+                        
+                        <div className="space-y-5">
+                            {Object.keys(links).map(key => (
+                                <div key={key} className="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 group hover:border-pink-200 transition-all">
+                                    <label className="text-[10px] font-black uppercase text-slate-400 block mb-2 ml-1 tracking-widest group-hover:text-pink-600 transition-colors">
+                                        {key.replace('_', ' ')} Link
+                                    </label>
+                                    <input 
+                                        className="w-full bg-slate-50 rounded-2xl px-5 py-4 text-sm outline-none border-2 border-transparent transition-all text-slate-700 font-medium input-glow"
+                                        value={links[key] || ''}
+                                        onChange={(e) => setLinks({...links, [key]: e.target.value})}
+                                        placeholder="https://..."
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC] to-transparent z-50">
+                            <div className="max-w-md mx-auto">
+                                <button onClick={handleSaveChanges} disabled={isSaving} className="w-full bg-pink-600 text-white font-black py-6 rounded-[32px] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 text-xl tracking-tight">
+                                    {isSaving ? "UPDATING..." : "SAVE ALL CHANGES"}
+                                </button>
+                            </div>
+                        </div>
+
+                        {showSuccess && (
+                            <div className="fixed top-12 left-6 right-6 z-[100] success-toast">
+                                <div className="bg-green-500 text-white font-black py-5 px-10 rounded-[30px] shadow-2xl text-center uppercase tracking-widest text-xs border-4 border-white">
+                                    🚀 Live Update Successful!
+                                </div>
+                            </div>
+                        )}
+                        {error && <p className="mt-6 text-center text-red-500 font-bold text-[10px] uppercase tracking-widest">{error}</p>}
+                    </div>
+                </div>
+            );
+
+            // --- MAIN PORTFOLIO VIEW ---
+            return (
+                <div className="min-h-screen px-6 py-12 max-w-md mx-auto relative flex flex-col">
+                    {isLoading && (
+                        <div className="fixed inset-0 bg-pink-600 z-[200] flex items-center justify-center">
+                            <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+                        </div>
+                    )}
+
+                    <header className="mb-12 animate-in">
+                        <h1 className="text-[52px] leading-[0.8] font-black text-yellow-300 tracking-tighter uppercase drop-shadow-xl">
+                            TAMNNA<br/>DUPATTA<br/>HUB
+                        </h1>
+                        <p className="mt-4 text-white/50 font-bold text-[10px] uppercase tracking-[0.4em] ml-1">Official Digital Store Hub</p>
+                    </header>
+
+                    <div className="grid grid-cols-2 gap-5 auto-rows-[170px]">
+                        {/* New Updates - Featured */}
+                        <a href={links.new_updates} target="_blank" className="row-span-2 bg-white rounded-[48px] p-8 shadow-2xl flex flex-col items-center justify-center animate-in bento-card">
+                            <div className="text-7xl mb-6 animate-bounce">🌸</div>
+                            <h3 className="text-2xl font-black text-purple-600 uppercase leading-none text-center">New<br/>Updates</h3>
+                            <div className="mt-8 w-12 h-12 border-2 border-purple-100 rounded-full flex items-center justify-center text-purple-400 font-black text-xl">→</div>
+                        </a>
+
+                        {/* Instagram */}
+                        <a href={links.instagram} target="_blank" className="bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '100ms'}}>
+                             <div className="w-16 h-16 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-[22px] mb-4 shadow-lg flex items-center justify-center rotate-6 scale-110">
+                                <svg viewBox="0 0 24 24" className="w-9 h-9 text-white fill-none stroke-current stroke-[1.8]">
+                                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                                </svg>
+                             </div>
+                             <h3 className="text-lg font-black text-blue-600 uppercase leading-none text-center">Insta<br/><span className="text-[11px] opacity-40 font-bold">Trend</span></h3>
+                        </a>
+
+                        {/* Google Rate */}
+                        <a href={links.google_rate} target="_blank" className="bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '200ms'}}>
+                             <div className="text-5xl mb-3 filter drop-shadow-lg">⭐</div>
+                             <h3 className="text-lg font-black text-purple-600 uppercase leading-none text-center">Rate<br/><span className="text-[11px] opacity-40 font-bold">Google</span></h3>
+                        </a>
+
+                        {/* Meesho */}
+                        <a href={links.meesho} target="_blank" className="bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '300ms'}}>
+                             <div className="text-6xl mb-3 filter drop-shadow-md">🛍️</div>
+                             <h3 className="text-lg font-black text-pink-500 uppercase">Meesho</h3>
+                        </a>
+                        
+                        {/* Amazon */}
+                        <a href={links.amazon || '#'} target={links.amazon ? "_blank" : "_self"} className={`bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.amazon && 'opacity-30 grayscale'}`} style={{animationDelay: '350ms'}}>
+                             <div className="text-5xl mb-3 filter drop-shadow-md">📦</div>
+                             <h3 className="text-lg font-black text-orange-500 uppercase">Amazon</h3>
+                        </a>
+
+                        {/* Flipkart */}
+                        <a href={links.flipkart || '#'} target={links.flipkart ? "_blank" : "_self"} className={`bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.flipkart && 'opacity-30 grayscale'}`} style={{animationDelay: '400ms'}}>
+                             <div className="text-5xl mb-3 filter drop-shadow-md">🛒</div>
+                             <h3 className="text-lg font-black text-blue-500 uppercase">Flipkart</h3>
+                        </a>
+
+                        {/* Best Seller */}
+                        <a href={links.best_seller || '#'} target={links.best_seller ? "_blank" : "_self"} className={`bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.best_seller && 'opacity-30 grayscale'}`} style={{animationDelay: '450ms'}}>
+                             <div className="text-4xl mb-2 animate-pulse">🚀</div>
+                             <h3 className="text-lg font-black text-blue-600 uppercase">Top Sale</h3>
+                        </a>
+
+                        {/* Company Culture */}
+                        <a href={links.culture} target="_blank" className="bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '500ms'}}>
+                             <div className="text-5xl mb-3 text-yellow-500 drop-shadow-sm">✨</div>
+                             <h3 className="text-lg font-black text-purple-600 uppercase leading-none text-center">Brand<br/><span className="text-[11px] opacity-40 font-bold">Culture</span></h3>
+                        </a>
+                    </div>
+
+                    <footer className="mt-24 text-center space-y-12 pb-20">
+                        <div className="flex justify-center items-center gap-4 text-white/30 font-bold uppercase tracking-[0.4em] text-[9px]">
+                            <div className="h-[1px] flex-1 bg-white/10 max-w-[50px]"></div>
+                            <span>Verified Digital Hub</span>
+                            <div className="h-[1px] flex-1 bg-white/10 max-w-[50px]"></div>
+                        </div>
+                        
+                        <button onClick={() => setView('login')} className="bg-white/10 text-white/60 px-10 py-5 rounded-full text-[11px] font-black uppercase tracking-[0.3em] hover:bg-white/20 transition-all active:scale-90 border border-white/10">
+                            Open Admin Editor
+                        </button>
+                        
+                        <div className="space-y-2">
+                            <p className="text-[10px] uppercase tracking-[0.5em] text-white/20 font-medium">
+                                © 2024 TAMNNA DUPATTA HUB
+                            </p>
+                            <p className="text-[8px] uppercase tracking-[0.2em] text-white/10">
+                                Crafted for Excellence
+                            </p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

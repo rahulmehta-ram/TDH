@@ -10,13 +10,13 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Firebase Services (Compat Version for ease of use in HTML) -->
+    <!-- Firebase Services (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
     
     <style>
         body { 
@@ -59,6 +59,12 @@
             box-shadow: 0 0 0 4px rgba(255, 46, 176, 0.1);
             border-color: #FF2EB0 !important;
         }
+
+        .message-bubble {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px border rgba(255,255,255,0.2);
+        }
     </style>
 </head>
 <body>
@@ -77,6 +83,7 @@
         };
 
         const siteAppId = "tamnna-dupatta-hub-live";
+        const googleReviewLink = "https://g.page/r/CQ1U5-J70bkVEBM/review";
 
         // Initialize Firebase
         let db = null;
@@ -86,10 +93,10 @@
             auth = firebase.auth();
             db = firebase.firestore();
         } catch (e) { 
-            console.error("Firebase failed to load. Check your network or config."); 
+            console.error("Firebase failed to load."); 
         }
 
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
 
         const App = () => {
             const [view, setView] = useState('portfolio');
@@ -99,11 +106,10 @@
             const [showSuccess, setShowSuccess] = useState(false);
             const [isLoading, setIsLoading] = useState(true);
             
-            // App Links State (Defaults)
+            // App Links State
             const [links, setLinks] = useState({
-                new_updates: "https://t.me/+q8sPA5K04JxhZTc1",
-                instagram: "https://www.instagram.com/tamnna_dupatta?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw%3D%3D",
-                google_rate: "https://www.google.com/search?q=Tamnna+Dupatta+Hub",
+                instagram: "https://www.instagram.com/tamnna_dupatta",
+                google_rate: googleReviewLink,
                 meesho: "https://www.meesho.com/TAMNNACREATION?ms=2",
                 best_seller: "",
                 new_releases: "",
@@ -112,26 +118,37 @@
                 flipkart: ""
             });
 
-            // Authentication & Real-time Database Sync
+            // Random Messages List (Telegram Removed Completely)
+            const pushMessages = [
+                { emoji: "✨", title: "Love your Dupatta?", text: "Please rate us on Google & your purchase platform! Your support means the world to us." },
+                { emoji: "⭐", title: "Share Your Style!", text: "Rate us on Google and let others know about your experience with Tamnna Hub." },
+                { emoji: "🎁", title: "Your Feedback Matters", text: "Purchased from Meesho or Amazon? Please leave a review and help our small brand grow!" },
+                { emoji: "💬", title: "How did we do?", text: "We strive for 5 stars! Rate us on Google and help us improve our services for you." },
+                { emoji: "🛍️", title: "Shopping Reward", text: "Rate your purchase on Meesho/Flipkart! Real reviews help our community shop better." },
+                { emoji: "❤️", title: "Support Small Business", text: "A quick 5-star review on Google helps us reach more dupatta lovers like you!" },
+                { emoji: "📍", title: "Found Us on Google?", text: "Leave a 5-star review with a photo of your dupatta to help other shoppers!" },
+                { emoji: "🌟", title: "Authentic Quality", text: "Loved the fabric? Share your thoughts on Google Reviews today!" },
+                { emoji: "🔥", title: "Happy Customers!", text: "We love seeing you happy. Please share your feedback on Google and purchase sites!" }
+            ];
+
+            const currentMessage = useMemo(() => {
+                const index = Math.floor(Math.random() * pushMessages.length);
+                return pushMessages[index];
+            }, []);
+
             useEffect(() => {
                 if (!auth || !db) return;
-                
-                // Silent auth for DB access
                 auth.signInAnonymously().catch(() => console.log("Standard Access"));
                 
-                // Firestore path segments (6 segments for compliance)
                 const docRef = db.collection('artifacts').doc(siteAppId).collection('public').doc('data').collection('config').doc('settings');
-                
                 const unsubscribe = docRef.onSnapshot(snap => {
                     if (snap.exists) {
-                        setLinks(prev => ({...prev, ...snap.data()}));
+                        setLinks(prev => ({...prev, ...snap.data(), google_rate: googleReviewLink }));
                     }
                     setIsLoading(false);
                 }, err => {
-                    console.log("Database sync pending. Ensure Security Rules are Published.");
                     setIsLoading(false);
                 });
-
                 return () => unsubscribe();
             }, []);
 
@@ -158,181 +175,153 @@
                         setPassInput('');
                     }, 2000);
                 } catch (err) {
-                    setError('Save failed: Verify your Security Rules allow Public writes.');
-                    console.error(err);
+                    setError('Save failed.');
                 } finally {
                     setIsSaving(false);
                 }
             };
 
-            // --- ADMIN LOGIN VIEW ---
             if (view === 'login') return (
                 <div className="min-h-screen flex items-center justify-center p-6 text-white">
                     <div className="bg-white/10 backdrop-blur-3xl p-10 rounded-[48px] w-full max-w-sm border border-white/20 shadow-2xl animate-in">
                         <div className="flex justify-between items-center mb-10">
-                            <h2 className="text-3xl font-black uppercase tracking-tighter">Admin Panel</h2>
-                            <button onClick={() => setView('portfolio')} className="text-2xl hover:opacity-50 transition-opacity">✕</button>
+                            <h2 className="text-3xl font-black uppercase tracking-tighter">Admin</h2>
+                            <button onClick={() => setView('portfolio')} className="text-2xl hover:opacity-50">✕</button>
                         </div>
                         <form onSubmit={handleAdminLogin} className="space-y-8">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-2 opacity-50">Enter Admin Key</label>
-                                <input 
-                                    type="password" 
-                                    className="w-full bg-white/10 border-2 border-white/5 rounded-3xl py-5 px-8 outline-none focus:border-yellow-300 transition-all text-center text-xl tracking-widest"
-                                    value={passInput}
-                                    onChange={(e) => setPassInput(e.target.value)}
-                                    autoFocus
-                                    placeholder="••••••••"
-                                />
-                            </div>
-                            {error && <p className="text-yellow-300 text-center font-bold text-xs uppercase animate-pulse">{error}</p>}
-                            <button className="w-full bg-yellow-300 text-pink-600 font-black py-5 rounded-3xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all text-lg tracking-tight">
-                                OPEN EDITOR
+                            <input 
+                                type="password" 
+                                className="w-full bg-white/10 border-2 border-white/5 rounded-3xl py-5 px-8 outline-none text-center text-xl tracking-widest focus:border-yellow-300"
+                                value={passInput}
+                                onChange={(e) => setPassInput(e.target.value)}
+                                placeholder="••••••••"
+                            />
+                            {error && <p className="text-yellow-300 text-center font-bold text-xs uppercase">{error}</p>}
+                            <button className="w-full bg-yellow-300 text-pink-600 font-black py-5 rounded-3xl shadow-xl hover:scale-105 active:scale-95 transition-all">
+                                ACCESS PANEL
                             </button>
                         </form>
                     </div>
                 </div>
             );
 
-            // --- ADMIN EDITOR VIEW ---
             if (view === 'admin') return (
-                <div className="min-h-screen bg-[#F8FAFC] p-6 font-sans">
-                    <div className="max-w-md mx-auto pb-40">
-                        <div className="flex justify-between items-center mb-12">
-                            <div>
-                                <h1 className="text-4xl font-black text-pink-600 uppercase leading-none tracking-tighter">Edit<br/>Links</h1>
-                                <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-[0.2em]">Management Dashboard</p>
-                            </div>
-                            <button onClick={() => setView('portfolio')} className="bg-white p-4 rounded-3xl shadow-sm text-slate-400 hover:text-red-500 transition-colors">✕</button>
+                <div className="min-h-screen bg-[#F8FAFC] p-6 font-sans pb-40">
+                    <div className="max-w-md mx-auto">
+                        <div className="flex justify-between items-center mb-10">
+                            <h1 className="text-4xl font-black text-pink-600 uppercase tracking-tighter">Editor</h1>
+                            <button onClick={() => setView('portfolio')} className="bg-white p-4 rounded-3xl shadow-sm text-slate-400">✕</button>
                         </div>
-                        
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                             {Object.keys(links).map(key => (
-                                <div key={key} className="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 group hover:border-pink-200 transition-all">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 block mb-2 ml-1 tracking-widest group-hover:text-pink-600 transition-colors">
-                                        {key.replace('_', ' ')} Link
-                                    </label>
+                                <div key={key} className="bg-white p-5 rounded-[32px] shadow-sm border border-slate-100">
+                                    <label className="text-[10px] font-black uppercase text-slate-400 block mb-2 ml-1">{key.replace('_', ' ')}</label>
                                     <input 
-                                        className="w-full bg-slate-50 rounded-2xl px-5 py-4 text-sm outline-none border-2 border-transparent transition-all text-slate-700 font-medium input-glow"
+                                        className="w-full bg-slate-50 rounded-2xl px-5 py-4 text-sm outline-none border-2 border-transparent focus:border-pink-500"
                                         value={links[key] || ''}
+                                        disabled={key === 'google_rate'}
                                         onChange={(e) => setLinks({...links, [key]: e.target.value})}
-                                        placeholder="https://..."
                                     />
+                                    {key === 'google_rate' && <p className="text-[8px] text-pink-500 mt-1 uppercase font-bold">Standardized Link Locked</p>}
                                 </div>
                             ))}
                         </div>
-
-                        <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC] to-transparent z-50">
-                            <div className="max-w-md mx-auto">
-                                <button onClick={handleSaveChanges} disabled={isSaving} className="w-full bg-pink-600 text-white font-black py-6 rounded-[32px] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 text-xl tracking-tight">
-                                    {isSaving ? "UPDATING..." : "SAVE ALL CHANGES"}
-                                </button>
-                            </div>
+                        <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#F8FAFC] z-50">
+                            <button onClick={handleSaveChanges} disabled={isSaving} className="w-full bg-pink-600 text-white font-black py-6 rounded-[32px] shadow-2xl active:scale-95 transition-all">
+                                {isSaving ? "SAVING..." : "PUBLISH UPDATES"}
+                            </button>
                         </div>
-
-                        {showSuccess && (
-                            <div className="fixed top-12 left-6 right-6 z-[100] success-toast">
-                                <div className="bg-green-500 text-white font-black py-5 px-10 rounded-[30px] shadow-2xl text-center uppercase tracking-widest text-xs border-4 border-white">
-                                    🚀 Live Update Successful!
-                                </div>
-                            </div>
-                        )}
-                        {error && <p className="mt-6 text-center text-red-500 font-bold text-[10px] uppercase tracking-widest">{error}</p>}
                     </div>
                 </div>
             );
 
-            // --- MAIN PORTFOLIO VIEW ---
             return (
-                <div className="min-h-screen px-6 py-12 max-w-md mx-auto relative flex flex-col">
-                    {isLoading && (
-                        <div className="fixed inset-0 bg-pink-600 z-[200] flex items-center justify-center">
-                            <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+                <div className="min-h-screen px-6 py-10 max-w-md mx-auto relative flex flex-col">
+                    <header className="mb-8 animate-in">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h1 className="text-[48px] leading-[0.85] font-black text-yellow-300 tracking-tighter uppercase drop-shadow-xl">
+                                    TAMNNA<br/>DUPATTA<br/>HUB
+                                </h1>
+                                <p className="mt-4 text-white/50 font-bold text-[10px] uppercase tracking-[0.4em] ml-1">Official Hub</p>
+                            </div>
+                            <div className="bg-white/20 p-3 rounded-full backdrop-blur-md">
+                                <span className="text-xl">🇮🇳</span>
+                            </div>
                         </div>
-                    )}
-
-                    <header className="mb-12 animate-in">
-                        <h1 className="text-[52px] leading-[0.8] font-black text-yellow-300 tracking-tighter uppercase drop-shadow-xl">
-                            TAMNNA<br/>DUPATTA<br/>HUB
-                        </h1>
-                        <p className="mt-4 text-white/50 font-bold text-[10px] uppercase tracking-[0.4em] ml-1">Official Digital Store Hub</p>
                     </header>
 
-                    <div className="grid grid-cols-2 gap-5 auto-rows-[170px]">
-                        {/* New Updates - Featured */}
-                        <a href={links.new_updates} target="_blank" className="row-span-2 bg-white rounded-[48px] p-8 shadow-2xl flex flex-col items-center justify-center animate-in bento-card">
-                            <div className="text-7xl mb-6 animate-bounce">🌸</div>
-                            <h3 className="text-2xl font-black text-purple-600 uppercase leading-none text-center">New<br/>Updates</h3>
-                            <div className="mt-8 w-12 h-12 border-2 border-purple-100 rounded-full flex items-center justify-center text-purple-400 font-black text-xl">→</div>
+                    {/* Dynamic Push Message Bubble (Focused on Reviews) */}
+                    <div className="mb-8 animate-in message-bubble p-6 rounded-[40px] border border-white/20 shadow-xl" style={{animationDelay: '100ms'}}>
+                        <div className="flex gap-4">
+                            <div className="text-4xl">{currentMessage.emoji}</div>
+                            <div>
+                                <h4 className="text-white font-black uppercase text-sm tracking-tight">{currentMessage.title}</h4>
+                                <p className="text-white/80 text-[11px] leading-relaxed mt-1 font-medium">{currentMessage.text}</p>
+                            </div>
+                        </div>
+                        <div className="mt-4 flex">
+                             <a href={googleReviewLink} target="_blank" className="bg-white text-pink-600 text-[10px] font-black px-6 py-2.5 rounded-full uppercase tracking-widest shadow-sm hover:scale-105 active:scale-95 transition-transform">Rate us on Google</a>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-5 auto-rows-[160px]">
+                        {/* Google Rate - Featured Primary */}
+                        <a href={googleReviewLink} target="_blank" className="row-span-2 bg-white rounded-[48px] p-8 shadow-2xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '200ms'}}>
+                            <div className="text-7xl mb-6 animate-bounce">⭐</div>
+                            <h3 className="text-xl font-black text-purple-600 uppercase leading-none text-center">Rate On<br/>Google</h3>
+                            <p className="text-[8px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Help us grow</p>
+                            <div className="mt-6 w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-400 font-black">→</div>
                         </a>
 
                         {/* Instagram */}
-                        <a href={links.instagram} target="_blank" className="bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '100ms'}}>
-                             <div className="w-16 h-16 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-[22px] mb-4 shadow-lg flex items-center justify-center rotate-6 scale-110">
-                                <svg viewBox="0 0 24 24" className="w-9 h-9 text-white fill-none stroke-current stroke-[1.8]">
+                        <a href={links.instagram} target="_blank" className="bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '300ms'}}>
+                             <div className="w-14 h-14 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-[20px] mb-3 shadow-lg flex items-center justify-center rotate-3">
+                                <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-none stroke-current stroke-[1.8]">
                                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                    <circle cx="12" cy="12" r="4"></circle>
                                     <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                                 </svg>
                              </div>
-                             <h3 className="text-lg font-black text-blue-600 uppercase leading-none text-center">Insta<br/><span className="text-[11px] opacity-40 font-bold">Trend</span></h3>
+                             <h3 className="text-base font-black text-blue-600 uppercase leading-none text-center">Insta<br/><span className="text-[10px] opacity-40 font-bold">Trend</span></h3>
                         </a>
 
-                        {/* Google Rate */}
-                        <a href={links.google_rate} target="_blank" className="bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '200ms'}}>
-                             <div className="text-5xl mb-3 filter drop-shadow-lg">⭐</div>
-                             <h3 className="text-lg font-black text-purple-600 uppercase leading-none text-center">Rate<br/><span className="text-[11px] opacity-40 font-bold">Google</span></h3>
+                        {/* Culture */}
+                        <a href={links.culture} target="_blank" className="bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '400ms'}}>
+                             <div className="text-5xl mb-2">✨</div>
+                             <h3 className="text-sm font-black text-purple-600 uppercase leading-none text-center">Brand<br/><span className="text-[10px] opacity-40 font-bold">Culture</span></h3>
                         </a>
 
-                        {/* Meesho */}
-                        <a href={links.meesho} target="_blank" className="bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '300ms'}}>
-                             <div className="text-6xl mb-3 filter drop-shadow-md">🛍️</div>
-                             <h3 className="text-lg font-black text-pink-500 uppercase">Meesho</h3>
+                        {/* Marketplace Row */}
+                        <a href={links.meesho} target="_blank" className="bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '500ms'}}>
+                             <div className="text-5xl mb-2">🛍️</div>
+                             <h3 className="text-sm font-black text-pink-500 uppercase tracking-tighter">Meesho</h3>
                         </a>
                         
-                        {/* Amazon */}
-                        <a href={links.amazon || '#'} target={links.amazon ? "_blank" : "_self"} className={`bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.amazon && 'opacity-30 grayscale'}`} style={{animationDelay: '350ms'}}>
-                             <div className="text-5xl mb-3 filter drop-shadow-md">📦</div>
-                             <h3 className="text-lg font-black text-orange-500 uppercase">Amazon</h3>
+                        <a href={links.amazon || '#'} target="_blank" className={`bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.amazon && 'opacity-40 grayscale'}`} style={{animationDelay: '600ms'}}>
+                             <div className="text-4xl mb-2">📦</div>
+                             <h3 className="text-sm font-black text-orange-500 uppercase tracking-tighter">Amazon</h3>
                         </a>
 
-                        {/* Flipkart */}
-                        <a href={links.flipkart || '#'} target={links.flipkart ? "_blank" : "_self"} className={`bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.flipkart && 'opacity-30 grayscale'}`} style={{animationDelay: '400ms'}}>
-                             <div className="text-5xl mb-3 filter drop-shadow-md">🛒</div>
-                             <h3 className="text-lg font-black text-blue-500 uppercase">Flipkart</h3>
+                        <a href={links.flipkart || '#'} target="_blank" className={`bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.flipkart && 'opacity-40 grayscale'}`} style={{animationDelay: '700ms'}}>
+                             <div className="text-4xl mb-2">🛒</div>
+                             <h3 className="text-sm font-black text-blue-500 uppercase tracking-tighter">Flipkart</h3>
                         </a>
 
-                        {/* Best Seller */}
-                        <a href={links.best_seller || '#'} target={links.best_seller ? "_blank" : "_self"} className={`bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.best_seller && 'opacity-30 grayscale'}`} style={{animationDelay: '450ms'}}>
-                             <div className="text-4xl mb-2 animate-pulse">🚀</div>
-                             <h3 className="text-lg font-black text-blue-600 uppercase">Top Sale</h3>
-                        </a>
-
-                        {/* Company Culture */}
-                        <a href={links.culture} target="_blank" className="bg-white rounded-[48px] p-6 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '500ms'}}>
-                             <div className="text-5xl mb-3 text-yellow-500 drop-shadow-sm">✨</div>
-                             <h3 className="text-lg font-black text-purple-600 uppercase leading-none text-center">Brand<br/><span className="text-[11px] opacity-40 font-bold">Culture</span></h3>
+                        <a href={links.best_seller || '#'} target="_blank" className={`bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.best_seller && 'opacity-40 grayscale'}`} style={{animationDelay: '800ms'}}>
+                             <div className="text-4xl mb-2">🚀</div>
+                             <h3 className="text-sm font-black text-blue-600 uppercase tracking-tighter">Best Buy</h3>
                         </a>
                     </div>
 
-                    <footer className="mt-24 text-center space-y-12 pb-20">
-                        <div className="flex justify-center items-center gap-4 text-white/30 font-bold uppercase tracking-[0.4em] text-[9px]">
-                            <div className="h-[1px] flex-1 bg-white/10 max-w-[50px]"></div>
-                            <span>Verified Rahul Mehta</span>
-                            <div className="h-[1px] flex-1 bg-white/10 max-w-[50px]"></div>
-                        </div>
-                        
-                        <button onClick={() => setView('login')} className="bg-white/10 text-white/60 px-10 py-5 rounded-full text-[11px] font-black uppercase tracking-[0.3em] hover:bg-white/20 transition-all active:scale-90 border border-white/10">
-                            Open Admin Editor
+                    <footer className="mt-20 text-center space-y-10 pb-16">
+                        <button onClick={() => setView('login')} className="bg-white/10 text-white/40 px-8 py-4 rounded-full text-[9px] font-black uppercase tracking-[0.4em] border border-white/5 active:scale-95 transition-all">
+                            Admin Login
                         </button>
                         
-                        <div className="space-y-2">
-                            <p className="text-[10px] uppercase tracking-[0.5em] text-white/20 font-medium">
-                                © 2024 TAMNNA DUPATTA HUB
-                            </p>
-                            <p className="text-[8px] uppercase tracking-[0.2em] text-white/10">
-                                Crafted for Excellence
-                            </p>
+                        <div className="space-y-1">
+                            <p className="text-[9px] uppercase tracking-[0.5em] text-white/30 font-medium">© 2024 TAMNNA DUPATTA HUB</p>
+                            <p className="text-[7px] uppercase tracking-[0.2em] text-white/20 italic">Designed with love for our customers</p>
                         </div>
                     </footer>
                 </div>

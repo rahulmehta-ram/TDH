@@ -4,108 +4,153 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tamnna Dupatta Hub | Official Portfolio</title>
+    
     <!-- Core Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Firebase Services (Compat Version) -->
+
+    <!-- Configure Babel to use Classic JSX Runtime (React.createElement) instead of automatic runtime imports -->
+    <script>
+        Babel.registerPreset('classic-react', {
+            presets: [
+                [Babel.availablePresets['react'], { runtime: 'classic' }]
+            ]
+        });
+    </script>
+
+    <!-- Firebase Services (Compat Version for Perfect Babel Integration) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
+        :root {
+            --neo-bg: #FF9ECA;
+            --neo-light: #FFC6E3;
+            --neo-dark: #DF75A0;
+            --neo-text: #4C0020;
+            --neo-text-muted: #802A50;
+            --neo-accent: #FF1A93;
+        }
+
         body { 
             font-family: 'Outfit', sans-serif; 
             margin: 0; 
             overflow-x: hidden; 
-            background-color: #FF2EB0; 
+            background: var(--neo-bg);
+            color: var(--neo-text);
             -webkit-tap-highlight-color: transparent;
         }
         ::-webkit-scrollbar { display: none; }
         
-        .animate-in { 
-            animation: in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; 
-        }
-        @keyframes in {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .bento-card { 
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
-            cursor: pointer; 
-            border: 1px solid rgba(255,255,255,0.1); 
-        }
-        .bento-card:hover { 
-            transform: translateY(-5px) scale(1.02); 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
-        }
-        .bento-card:active { transform: scale(0.95); }
-        
-        .success-toast { 
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-        }
-        @keyframes slideUp { 
-            from { transform: translateY(100%); opacity: 0; } 
-            to { transform: translateY(0); opacity: 1; } 
+        /* Extruded Neumorphic elements (Pop out) */
+        .neo-embossed {
+            background: var(--neo-bg);
+            box-shadow: 8px 8px 18px var(--neo-dark), -8px -8px 18px var(--neo-light);
+            border-radius: 28px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        .input-glow:focus {
-            box-shadow: 0 0 0 4px rgba(255, 46, 176, 0.1);
-            border-color: #FF2EB0 !important;
+        .neo-embossed-sm {
+            background: var(--neo-bg);
+            box-shadow: 4px 4px 10px var(--neo-dark), -4px -4px 10px var(--neo-light);
+            border-radius: 18px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        .message-bubble {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px border rgba(255,255,255,0.2);
+        /* Hover and active spring mechanics */
+        .neo-interactive {
+            cursor: pointer;
+        }
+
+        .neo-interactive:hover {
+            transform: translateY(-2px);
+            box-shadow: 10px 10px 22px var(--neo-dark), -10px -10px 22px var(--neo-light);
+        }
+
+        .neo-interactive:active {
+            transform: translateY(1px);
+            box-shadow: inset 4px 4px 10px var(--neo-dark), inset -4px -4px 10px var(--neo-light);
+        }
+
+        /* Recessed Neumorphic elements (Pressed in) */
+        .neo-recessed {
+            background: var(--neo-bg);
+            box-shadow: inset 5px 5px 12px var(--neo-dark), inset -5px -5px 12px var(--neo-light);
+            border-radius: 20px;
+        }
+
+        /* Ambient spinning for decorative elements */
+        .mandala-spin {
+            animation: spin 12s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Transition animations */
+        .animate-fade-in {
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen relative p-1">
     <div id="root"></div>
 
-    <script type="text/babel">
-        // --- FIREBASE CONFIGURATION ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDYxhq1itKAuE0Gtk7k2irVXRDOGEKqSJc",
-            authDomain: "tamnnadupattahub-3255c.firebaseapp.com",
-            projectId: "tamnnadupattahub-3255c",
-            storageBucket: "tamnnadupattahub-3255c.firebasestorage.app",
-            messagingSenderId: "976366593432",
-            appId: "1:976366593432:web:bec3655409f620b01ab7ed",
-            measurementId: "G-5KRYTFNLSV"
-        };
-
-        const siteAppId = "tamnna-dupatta-hub-live";
-        const googleReviewLink = "https://g.page/r/CQ1U5-J70bkVEBM/review";
-
-        // Initialize Firebase
-        let db = null;
-        let auth = null;
-        try {
-            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-        } catch (e) { 
-            console.error("Firebase failed to load."); 
-        }
-
+    <!-- Standard Babel Compilation Script Block with custom registered classic react preset -->
+    <script type="text/babel" data-presets="classic-react">
         const { useState, useEffect, useMemo } = React;
 
+        const firebaseConfig = typeof __firebase_config !== 'undefined'
+            ? JSON.parse(__firebase_config)
+            : {
+                apiKey: "AIzaSyDYxhq1itKAuE0Gtk7k2irVXRDOGEKqSJc",
+                authDomain: "tamnnadupattahub-3255c.firebaseapp.com",
+                projectId: "tamnnadupattahub-3255c",
+                storageBucket: "tamnnadupattahub-3255c.firebasestorage.app",
+                messagingSenderId: "976366593432",
+                appId: "1:976366593432:web:bec3655409f620b01ab7ed",
+                measurementId: "G-5KRYTFNLSV"
+            };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : "tamnna-dupatta-hub-live";
+        const googleReviewLink = "https://g.page/r/CQ1U5-J70bkVEBM/review";
+
+        // Safe Firebase Initialization & Fallback using Globally Registered Compat APIs
+        let auth = null;
+        let db = null;
+        let isFirebaseAvailable = false;
+
+        try {
+            if (window.firebase) {
+                const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
+                auth = firebase.auth();
+                db = firebase.firestore();
+                isFirebaseAvailable = true;
+            }
+        } catch (e) {
+            console.warn("Firebase initialization skipped or unavailable. Running safely in high-reliability local memory mode.");
+        }
+
         const App = () => {
-            const [view, setView] = useState('portfolio');
+            const [view, setView] = useState('portfolio'); // 'portfolio', 'login', 'admin'
             const [passInput, setPassInput] = useState('');
             const [error, setError] = useState('');
             const [isSaving, setIsSaving] = useState(false);
-            const [showSuccess, setShowSuccess] = useState(false);
+            const [toastMessage, setToastMessage] = useState(null);
             const [isLoading, setIsLoading] = useState(true);
-            
+            const [user, setUser] = useState(null);
+
             // App Links State
             const [links, setLinks] = useState({
                 instagram: "https://www.instagram.com/tamnna_dupatta",
@@ -118,17 +163,13 @@
                 flipkart: ""
             });
 
-            // Random Messages List (Telegram Removed Completely)
+            // Neumorphic reviewer brand updates
             const pushMessages = [
-                { emoji: "✨", title: "Love your Dupatta?", text: "Please rate us on Google & your purchase platform! Your support means the world to us." },
-                { emoji: "⭐", title: "Share Your Style!", text: "Rate us on Google and let others know about your experience with Tamnna Hub." },
-                { emoji: "🎁", title: "Your Feedback Matters", text: "Purchased from Meesho or Amazon? Please leave a review and help our small brand grow!" },
-                { emoji: "💬", title: "How did we do?", text: "We strive for 5 stars! Rate us on Google and help us improve our services for you." },
-                { emoji: "🛍️", title: "Shopping Reward", text: "Rate your purchase on Meesho/Flipkart! Real reviews help our community shop better." },
-                { emoji: "❤️", title: "Support Small Business", text: "A quick 5-star review on Google helps us reach more dupatta lovers like you!" },
-                { emoji: "📍", title: "Found Us on Google?", text: "Leave a 5-star review with a photo of your dupatta to help other shoppers!" },
-                { emoji: "🌟", title: "Authentic Quality", text: "Loved the fabric? Share your thoughts on Google Reviews today!" },
-                { emoji: "🔥", title: "Happy Customers!", text: "We love seeing you happy. Please share your feedback on Google and purchase sites!" }
+                { emoji: "🌸", title: "LOVE YOUR DUPATTA?", text: "Rate us 5-stars on Google! Your support feeds our family-owned craft team." },
+                { emoji: "💖", title: "SHARE YOUR ETHNIC STYLE!", text: "Drop a quick Google review and share a beautiful snap of your dupatta patterns!" },
+                { emoji: "📦", title: "REVIEW REWARD", text: "Ordered from Meesho or Amazon? Leave feedback and let us know about your experience!" },
+                { emoji: "👑", title: "STRIVING FOR 5-STARS!", text: "Your feedback helps us perfect traditional Indian weaving, rich colors, and soft textures." },
+                { emoji: "🎀", title: "FESTIVE SEASONS COLLAB", text: "Loved the quality? A quick Google Review keeps us motivated to continue our artistic weaving." }
             ];
 
             const currentMessage = useMemo(() => {
@@ -136,21 +177,65 @@
                 return pushMessages[index];
             }, []);
 
+            // Toast helper to show elegant alerts instead of default popups
+            const triggerToast = (message) => {
+                setToastMessage(message);
+                setTimeout(() => setToastMessage(null), 3000);
+            };
+
+            // 1. Firebase Authentication State
             useEffect(() => {
-                if (!auth || !db) return;
-                auth.signInAnonymously().catch(() => console.log("Standard Access"));
-                
-                const docRef = db.collection('artifacts').doc(siteAppId).collection('public').doc('data').collection('config').doc('settings');
-                const unsubscribe = docRef.onSnapshot(snap => {
-                    if (snap.exists) {
-                        setLinks(prev => ({...prev, ...snap.data(), google_rate: googleReviewLink }));
+                if (!isFirebaseAvailable || !auth) {
+                    setIsLoading(false);
+                    return;
+                }
+
+                const initAuth = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await auth.signInWithCustomToken(__initial_auth_token);
+                        } else {
+                            await auth.signInAnonymously();
+                        }
+                    } catch (e) {
+                        console.warn("Anonymous auth failed, running safely in public viewing mode.", e);
                     }
-                    setIsLoading(false);
-                }, err => {
-                    setIsLoading(false);
+                };
+
+                initAuth();
+                const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+                    setUser(currentUser);
                 });
+
                 return () => unsubscribe();
             }, []);
+
+            // 2. Safe Firestore Listening
+            useEffect(() => {
+                if (!isFirebaseAvailable || !db) {
+                    setIsLoading(false);
+                    return;
+                }
+                if (!user) return; 
+
+                const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('config').doc('settings');
+
+                const unsubscribe = docRef.onSnapshot((snap) => {
+                    if (snap.exists) {
+                        setLinks(prev => ({
+                            ...prev, 
+                            ...snap.data(), 
+                            google_rate: googleReviewLink 
+                        }));
+                    }
+                    setIsLoading(false);
+                }, (err) => {
+                    console.error("Firestore read skipped. Operating on native settings.", err);
+                    setIsLoading(false);
+                });
+
+                return () => unsubscribe();
+            }, [user]);
 
             const handleAdminLogin = (e) => {
                 e.preventDefault();
@@ -158,47 +243,88 @@
                     setView('admin');
                     setError('');
                 } else {
-                    setError('Wrong Security Password');
+                    setError('WRONG PASSWORD. TRY AGAIN.');
                 }
             };
 
             const handleSaveChanges = async () => {
                 setIsSaving(true);
                 setError('');
-                try {
-                    const docRef = db.collection('artifacts').doc(siteAppId).collection('public').doc('data').collection('config').doc('settings');
-                    await docRef.set(links);
-                    setShowSuccess(true);
+                
+                if (!isFirebaseAvailable || !db) {
                     setTimeout(() => {
-                        setShowSuccess(false);
+                        setIsSaving(false);
+                        triggerToast("Saved locally (Offline Mode)");
                         setView('portfolio');
                         setPassInput('');
-                    }, 2000);
+                    }, 1000);
+                    return;
+                }
+
+                try {
+                    const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('config').doc('settings');
+                    await docRef.set(links);
+                    triggerToast("Published successfully!");
+                    setTimeout(() => {
+                        setView('portfolio');
+                        setPassInput('');
+                    }, 1500);
                 } catch (err) {
-                    setError('Save failed.');
+                    console.error(err);
+                    setError('Failed to update. Verify access permissions.');
                 } finally {
                     setIsSaving(false);
                 }
             };
 
-            if (view === 'login') return (
-                <div className="min-h-screen flex items-center justify-center p-6 text-white">
-                    <div className="bg-white/10 backdrop-blur-3xl p-10 rounded-[48px] w-full max-w-sm border border-white/20 shadow-2xl animate-in">
-                        <div className="flex justify-between items-center mb-10">
-                            <h2 className="text-3xl font-black uppercase tracking-tighter">Admin</h2>
-                            <button onClick={() => setView('portfolio')} className="text-2xl hover:opacity-50">✕</button>
+            if (isLoading) {
+                return (
+                    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#FF9ECA] text-[#4C0020] p-6">
+                        <div className="neo-embossed p-6 mb-6 flex items-center justify-center bg-[#FF9ECA]">
+                            <svg className="w-16 h-16 text-[#FF1A93] mandala-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
+                            </svg>
                         </div>
-                        <form onSubmit={handleAdminLogin} className="space-y-8">
-                            <input 
-                                type="password" 
-                                className="w-full bg-white/10 border-2 border-white/5 rounded-3xl py-5 px-8 outline-none text-center text-xl tracking-widest focus:border-yellow-300"
-                                value={passInput}
-                                onChange={(e) => setPassInput(e.target.value)}
-                                placeholder="••••••••"
-                            />
-                            {error && <p className="text-yellow-300 text-center font-bold text-xs uppercase">{error}</p>}
-                            <button className="w-full bg-yellow-300 text-pink-600 font-black py-5 rounded-3xl shadow-xl hover:scale-105 active:scale-95 transition-all">
-                                ACCESS PANEL
+                        <h2 className="text-2xl font-black tracking-widest uppercase text-[#4C0020]">TAMNNA HUB</h2>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mt-2 text-[#802A50]">Weaving Tradition & Love...</p>
+                    </div>
+                );
+            }
+
+            // Neumorphic Toast Alert Component
+            const Toast = () => toastMessage ? (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#FF9ECA] neo-embossed px-6 py-4 flex items-center gap-3 animate-fade-in border border-white/20">
+                    <span className="text-[#FF1A93] text-xl font-bold">🌸</span>
+                    <span className="text-xs font-black tracking-wider uppercase text-[#4C0020]">{toastMessage}</span>
+                </div>
+            ) : null;
+
+            if (view === 'login') return (
+                <div className="min-h-screen flex items-center justify-center p-6 text-[#4C0020] animate-fade-in">
+                    <Toast />
+                    <div className="neo-embossed p-8 w-full max-w-sm relative">
+                        <div className="flex justify-between items-center mb-8 border-b border-pink-300 pb-4">
+                            <div>
+                                <h2 className="text-2xl font-black uppercase tracking-tight text-[#4C0020]">ADMIN PANEL</h2>
+                                <p className="text-[9px] font-bold uppercase tracking-wider mt-1 text-[#FF1A93]">Authorized Access</p>
+                            </div>
+                            <button onClick={() => setView('portfolio')} className="w-10 h-10 neo-embossed neo-interactive flex items-center justify-center font-black text-[#4C0020] hover:text-[#FF1A93]">✕</button>
+                        </div>
+                        <form onSubmit={handleAdminLogin} className="space-y-6">
+                            <div>
+                                <label className="text-xs font-black uppercase tracking-wider block mb-2 text-[#802A50] ml-1">Access Pin</label>
+                                <input 
+                                    type="password" 
+                                    className="w-full neo-recessed py-4 px-6 font-black text-center text-2xl tracking-widest outline-none text-[#4C0020]"
+                                    value={passInput}
+                                    onChange={(e) => setPassInput(e.target.value)}
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+                            {error && <p className="text-red-600 font-bold text-xs uppercase tracking-wide text-center">{error}</p>}
+                            <button className="w-full neo-embossed neo-interactive py-4 font-black tracking-widest text-xs uppercase text-[#4C0020] hover:text-[#FF1A93]">
+                                VALIDATE & ENTER
                             </button>
                         </form>
                     </div>
@@ -206,128 +332,210 @@
             );
 
             if (view === 'admin') return (
-                <div className="min-h-screen bg-[#F8FAFC] p-6 font-sans pb-40">
-                    <div className="max-w-md mx-auto">
-                        <div className="flex justify-between items-center mb-10">
-                            <h1 className="text-4xl font-black text-pink-600 uppercase tracking-tighter">Editor</h1>
-                            <button onClick={() => setView('portfolio')} className="bg-white p-4 rounded-3xl shadow-sm text-slate-400">✕</button>
+                <div className="min-h-screen p-6 font-sans pb-32 animate-fade-in max-w-lg mx-auto text-[#4C0020]">
+                    <Toast />
+                    <header className="flex justify-between items-center mb-10 border-b border-pink-300 pb-6">
+                        <div>
+                            <h1 className="text-3xl font-black uppercase tracking-tight text-[#4C0020]">LINK EDITOR</h1>
+                            <p className="text-xs font-bold uppercase tracking-widest mt-1 text-[#802A50]">Configure Destinations</p>
                         </div>
-                        <div className="space-y-4">
-                            {Object.keys(links).map(key => (
-                                <div key={key} className="bg-white p-5 rounded-[32px] shadow-sm border border-slate-100">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 block mb-2 ml-1">{key.replace('_', ' ')}</label>
-                                    <input 
-                                        className="w-full bg-slate-50 rounded-2xl px-5 py-4 text-sm outline-none border-2 border-transparent focus:border-pink-500"
-                                        value={links[key] || ''}
-                                        disabled={key === 'google_rate'}
-                                        onChange={(e) => setLinks({...links, [key]: e.target.value})}
-                                    />
-                                    {key === 'google_rate' && <p className="text-[8px] text-pink-500 mt-1 uppercase font-bold">Standardized Link Locked</p>}
-                                </div>
-                            ))}
-                        </div>
-                        <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#F8FAFC] z-50">
-                            <button onClick={handleSaveChanges} disabled={isSaving} className="w-full bg-pink-600 text-white font-black py-6 rounded-[32px] shadow-2xl active:scale-95 transition-all">
-                                {isSaving ? "SAVING..." : "PUBLISH UPDATES"}
-                            </button>
-                        </div>
+                        <button onClick={() => setView('portfolio')} className="w-10 h-10 neo-embossed neo-interactive flex items-center justify-center font-black text-[#4C0020] hover:text-[#FF1A93]">✕</button>
+                    </header>
+                    
+                    <div className="space-y-6">
+                        {Object.keys(links).map(key => (
+                            <div key={key} className="neo-embossed p-5">
+                                <label className="text-[10px] font-black uppercase tracking-wider text-[#802A50] block mb-2 ml-1">{key.replace('_', ' ')}</label>
+                                <input 
+                                    className="w-full neo-recessed px-4 py-3 text-sm font-semibold outline-none text-[#4C0020] disabled:opacity-50"
+                                    value={links[key] || ''}
+                                    disabled={key === 'google_rate'}
+                                    onChange={(e) => setLinks({...links, [key]: e.target.value})}
+                                    placeholder={`Enter ${key.replace('_', ' ')} link`}
+                                />
+                                {key === 'google_rate' && (
+                                    <p className="text-[10px] text-[#FF1A93] uppercase font-bold tracking-wider mt-2 ml-1">★ Standardized review destination</p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#FF9ECA] via-[#FF9ECA]/95 to-transparent z-40 max-w-lg mx-auto">
+                        <button 
+                            onClick={handleSaveChanges} 
+                            disabled={isSaving} 
+                            className="w-full neo-embossed neo-interactive py-5 font-black tracking-widest text-xs uppercase text-[#4C0020] hover:text-[#FF1A93]"
+                        >
+                            {isSaving ? "PUBLISHING SETTINGS..." : "PUBLISH LIVE PORTFOLIO"}
+                        </button>
                     </div>
                 </div>
             );
 
             return (
-                <div className="min-h-screen px-6 py-10 max-w-md mx-auto relative flex flex-col">
-                    <header className="mb-8 animate-in">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <h1 className="text-[48px] leading-[0.85] font-black text-yellow-300 tracking-tighter uppercase drop-shadow-xl">
-                                    TAMNNA<br/>DUPATTA<br/>HUB
+                <div className="min-h-screen px-6 py-10 max-w-md mx-auto relative flex flex-col justify-between animate-fade-in text-[#4C0020]">
+                    <Toast />
+                    <div>
+                        {/* Header Area */}
+                        <header className="mb-8 flex justify-between items-start">
+                            <div className="neo-embossed p-5 inline-block">
+                                <h1 className="text-3xl leading-none font-black tracking-tight text-[#4C0020]">
+                                    TAMNNA<br/>
+                                    <span className="text-[#FF1A93] inline-block my-1 transform -rotate-1">DUPATTA</span><br/>
+                                    HUB
                                 </h1>
-                                <p className="mt-4 text-white/50 font-bold text-[10px] uppercase tracking-[0.4em] ml-1">Official Hub</p>
+                                <p className="mt-2 text-[#802A50] font-black text-[9px] uppercase tracking-[0.35em] ml-0.5">The Fine Art of Weaving</p>
                             </div>
-                            <div className="bg-white/20 p-3 rounded-full backdrop-blur-md">
-                                <span className="text-xl">🇮🇳</span>
+                            <div className="neo-embossed w-14 h-14 flex items-center justify-center rotate-3">
+                                <span className="text-3xl">🇮🇳</span>
                             </div>
-                        </div>
-                    </header>
+                        </header>
 
-                    {/* Dynamic Push Message Bubble (Focused on Reviews) */}
-                    <div className="mb-8 animate-in message-bubble p-6 rounded-[40px] border border-white/20 shadow-xl" style={{animationDelay: '100ms'}}>
-                        <div className="flex gap-4">
-                            <div className="text-4xl">{currentMessage.emoji}</div>
-                            <div>
-                                <h4 className="text-white font-black uppercase text-sm tracking-tight">{currentMessage.title}</h4>
-                                <p className="text-white/80 text-[11px] leading-relaxed mt-1 font-medium">{currentMessage.text}</p>
+                        {/* Neumorphic Active Alert Banner */}
+                        <div className="mb-8 neo-embossed p-5 relative overflow-hidden">
+                            <div className="absolute right-2 -bottom-2 text-7xl opacity-5 font-black select-none pointer-events-none">🌸</div>
+                            <div className="flex gap-4">
+                                <div className="text-3xl p-3 neo-recessed self-start rotate-3">{currentMessage.emoji}</div>
+                                <div>
+                                    <h4 className="text-[#4C0020] font-black uppercase text-xs tracking-wide">{currentMessage.title}</h4>
+                                    <p className="text-[#802A50] text-[11px] leading-relaxed mt-1 font-bold">{currentMessage.text}</p>
+                                </div>
+                            </div>
+                            <div className="mt-4 flex">
+                                <a 
+                                    href={googleReviewLink} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="neo-embossed neo-interactive text-[#4C0020] hover:text-[#FF1A93] text-[9px] font-black px-6 py-2.5 uppercase tracking-widest block"
+                                >
+                                    Write a 5-Star Review
+                                </a>
                             </div>
                         </div>
-                        <div className="mt-4 flex">
-                             <a href={googleReviewLink} target="_blank" className="bg-white text-pink-600 text-[10px] font-black px-6 py-2.5 rounded-full uppercase tracking-widest shadow-sm hover:scale-105 active:scale-95 transition-transform">Rate us on Google</a>
+
+                        {/* Neumorphic Bento Link Grid */}
+                        <div className="grid grid-cols-2 gap-5 auto-rows-[140px]">
+                            
+                            {/* Google Rate Card - Hero Feature */}
+                            <a 
+                                href={googleReviewLink} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="row-span-2 neo-embossed neo-interactive p-6 flex flex-col items-center justify-center text-center relative overflow-hidden"
+                            >
+                                <div className="text-5xl mb-4 animate-bounce text-[#FF1A93]">
+                                    ★
+                                </div>
+                                <h3 className="text-lg font-black text-[#4C0020] uppercase leading-tight">Rate Us<br/><span className="text-[#FF1A93]">On Google</span></h3>
+                                <p className="text-[8px] font-black text-[#802A50] mt-3 uppercase tracking-wider">Share your experience</p>
+                                <div className="mt-4 w-9 h-9 neo-recessed flex items-center justify-center text-[#FF1A93] font-black">
+                                    →
+                                </div>
+                            </a>
+
+                            {/* Instagram */}
+                            <a 
+                                href={links.instagram} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="neo-embossed neo-interactive p-4 flex flex-col items-center justify-center"
+                            >
+                                <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center rotate-3 text-2xl">
+                                    📸
+                                </div>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Instagram</h3>
+                            </a>
+
+                            {/* Culture Website */}
+                            <a 
+                                href={links.culture} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="neo-embossed neo-interactive p-4 flex flex-col items-center justify-center"
+                            >
+                                <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center -rotate-3 text-2xl">
+                                    🏺
+                                </div>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Our Culture</h3>
+                            </a>
+
+                            {/* Meesho Shop */}
+                            <a 
+                                href={links.meesho} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="neo-embossed neo-interactive p-4 flex flex-col items-center justify-center"
+                            >
+                                <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center rotate-6 text-2xl">
+                                    🛍️
+                                </div>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Meesho Shop</h3>
+                            </a>
+
+                            {/* Amazon Store */}
+                            <a 
+                                href={links.amazon || '#'} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={`neo-embossed p-4 flex flex-col items-center justify-center ${links.amazon ? 'neo-interactive' : 'opacity-40 cursor-not-allowed shadow-none border border-pink-400'}`}
+                                onClick={(e) => !links.amazon && e.preventDefault()}
+                            >
+                                <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center -rotate-6 text-2xl">
+                                    📦
+                                </div>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Amazon</h3>
+                            </a>
+
+                            {/* Flipkart */}
+                            <a 
+                                href={links.flipkart || '#'} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={`neo-embossed p-4 flex flex-col items-center justify-center ${links.flipkart ? 'neo-interactive' : 'opacity-40 cursor-not-allowed shadow-none border border-pink-400'}`}
+                                onClick={(e) => !links.flipkart && e.preventDefault()}
+                            >
+                                <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center rotate-3 text-2xl">
+                                    🛒
+                                </div>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Flipkart</h3>
+                            </a>
+
+                            {/* Best buy / Best Seller link */}
+                            <a 
+                                href={links.best_seller || '#'} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={`neo-embossed p-4 flex flex-col items-center justify-center ${links.best_seller ? 'neo-interactive' : 'opacity-40 cursor-not-allowed shadow-none border border-pink-400'}`}
+                                onClick={(e) => !links.best_seller && e.preventDefault()}
+                            >
+                                <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center -rotate-3 text-2xl">
+                                    🔥
+                                </div>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Hot Deals</h3>
+                            </a>
+
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-5 auto-rows-[160px]">
-                        {/* Google Rate - Featured Primary */}
-                        <a href={googleReviewLink} target="_blank" className="row-span-2 bg-white rounded-[48px] p-8 shadow-2xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '200ms'}}>
-                            <div className="text-7xl mb-6 animate-bounce">⭐</div>
-                            <h3 className="text-xl font-black text-purple-600 uppercase leading-none text-center">Rate On<br/>Google</h3>
-                            <p className="text-[8px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Help us grow</p>
-                            <div className="mt-6 w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-400 font-black">→</div>
-                        </a>
-
-                        {/* Instagram */}
-                        <a href={links.instagram} target="_blank" className="bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '300ms'}}>
-                             <div className="w-14 h-14 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-[20px] mb-3 shadow-lg flex items-center justify-center rotate-3">
-                                <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-none stroke-current stroke-[1.8]">
-                                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                    <circle cx="12" cy="12" r="4"></circle>
-                                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                                </svg>
-                             </div>
-                             <h3 className="text-base font-black text-blue-600 uppercase leading-none text-center">Insta<br/><span className="text-[10px] opacity-40 font-bold">Trend</span></h3>
-                        </a>
-
-                        {/* Culture */}
-                        <a href={links.culture} target="_blank" className="bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '400ms'}}>
-                             <div className="text-5xl mb-2">✨</div>
-                             <h3 className="text-sm font-black text-purple-600 uppercase leading-none text-center">Brand<br/><span className="text-[10px] opacity-40 font-bold">Culture</span></h3>
-                        </a>
-
-                        {/* Marketplace Row */}
-                        <a href={links.meesho} target="_blank" className="bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card" style={{animationDelay: '500ms'}}>
-                             <div className="text-5xl mb-2">🛍️</div>
-                             <h3 className="text-sm font-black text-pink-500 uppercase tracking-tighter">Meesho</h3>
-                        </a>
-                        
-                        <a href={links.amazon || '#'} target="_blank" className={`bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.amazon && 'opacity-40 grayscale'}`} style={{animationDelay: '600ms'}}>
-                             <div className="text-4xl mb-2">📦</div>
-                             <h3 className="text-sm font-black text-orange-500 uppercase tracking-tighter">Amazon</h3>
-                        </a>
-
-                        <a href={links.flipkart || '#'} target="_blank" className={`bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.flipkart && 'opacity-40 grayscale'}`} style={{animationDelay: '700ms'}}>
-                             <div className="text-4xl mb-2">🛒</div>
-                             <h3 className="text-sm font-black text-blue-500 uppercase tracking-tighter">Flipkart</h3>
-                        </a>
-
-                        <a href={links.best_seller || '#'} target="_blank" className={`bg-white rounded-[48px] p-5 shadow-xl flex flex-col items-center justify-center animate-in bento-card ${!links.best_seller && 'opacity-40 grayscale'}`} style={{animationDelay: '800ms'}}>
-                             <div className="text-4xl mb-2">🚀</div>
-                             <h3 className="text-sm font-black text-blue-600 uppercase tracking-tighter">Best Buy</h3>
-                        </a>
-                    </div>
-
-                    <footer className="mt-20 text-center space-y-10 pb-16">
-                        <button onClick={() => setView('login')} className="bg-white/10 text-white/40 px-8 py-4 rounded-full text-[9px] font-black uppercase tracking-[0.4em] border border-white/5 active:scale-95 transition-all">
-                            Admin Login
+                    {/* Footer Area */}
+                    <footer className="mt-16 text-center space-y-6 pb-6 animate-fade-in">
+                        <button 
+                            onClick={() => setView('login')} 
+                            className="neo-embossed neo-interactive px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest text-[#4C0020] hover:text-[#FF1A93]"
+                        >
+                            Configure Links
                         </button>
                         
-                        <div className="space-y-1">
-                            <p className="text-[9px] uppercase tracking-[0.5em] text-white/30 font-medium">© 2024 TAMNNA DUPATTA HUB</p>
-                            <p className="text-[7px] uppercase tracking-[0.2em] text-white/20 italic">Designed with love for our customers</p>
+                        <div className="space-y-1 font-black text-[#802A50]">
+                            <p className="text-[10px] uppercase tracking-wider">© 2026 TAMNNA DUPATTA HUB</p>
+                            <p className="text-[8px] uppercase tracking-wider opacity-60 italic">Weaving premium tradition directly to your home</p>
                         </div>
                     </footer>
                 </div>
             );
         };
 
+        // Render the App
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>

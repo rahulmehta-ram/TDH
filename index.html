@@ -151,14 +151,16 @@
             const [isLoading, setIsLoading] = useState(true);
             const [user, setUser] = useState(null);
 
-            // App Links State
+            // App Links State including newly added destinations
             const [links, setLinks] = useState({
                 instagram: "https://www.instagram.com/tamnna_dupatta",
+                whatsapp: "https://wa.me/919763665932",
+                telegram: "https://t.me/tamnna_dupatta",
+                website: "https://tamnna-dupatta-hub2.odoo.com/",
                 google_rate: googleReviewLink,
                 meesho: "https://www.meesho.com/TAMNNACREATION?ms=2",
                 best_seller: "",
                 new_releases: "",
-                culture: "https://tamnna-dupatta-hub2.odoo.com/",
                 amazon: "",
                 flipkart: ""
             });
@@ -299,6 +301,7 @@
                 </div>
             ) : null;
 
+            // ADMIN LOGIN VIEW
             if (view === 'login') return (
                 <div className="min-h-screen flex items-center justify-center p-6 text-[#4C0020] animate-fade-in">
                     <Toast />
@@ -331,6 +334,7 @@
                 </div>
             );
 
+            // ADMIN CONFIG EDITOR VIEW
             if (view === 'admin') return (
                 <div className="min-h-screen p-6 font-sans pb-32 animate-fade-in max-w-lg mx-auto text-[#4C0020]">
                     <Toast />
@@ -372,6 +376,7 @@
                 </div>
             );
 
+            // MAIN PORTFOLIO VIEW
             return (
                 <div className="min-h-screen px-6 py-10 max-w-md mx-auto relative flex flex-col justify-between animate-fade-in text-[#4C0020]">
                     <Toast />
@@ -433,6 +438,22 @@
                                 </div>
                             </a>
 
+                            {/* WhatsApp (Replaced Our Culture with standard high quality vector layout) */}
+                            <a 
+                                href={links.whatsapp || '#'} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={`neo-embossed p-4 flex flex-col items-center justify-center ${links.whatsapp ? 'neo-interactive' : 'opacity-40 cursor-not-allowed shadow-none border border-pink-400'}`}
+                                onClick={(e) => !links.whatsapp && e.preventDefault()}
+                            >
+                                <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center -rotate-3 text-2xl">
+                                    <svg className="w-6 h-6 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.437 0 9.862-4.414 9.865-9.848.001-2.63-1.019-5.101-2.874-6.958C16.399 1.94 13.913.92 11.285.92c-5.44 0-9.866 4.414-9.869 9.851-.001 1.764.464 3.488 1.344 5.01L1.758 20.3l4.889-1.146zM17.3 14.155c-.285-.143-1.687-.832-1.948-.927-.261-.096-.451-.144-.641.143-.19.287-.736.927-.903 1.118-.166.19-.332.214-.618.071-.285-.143-1.207-.445-2.299-1.42-.85-.758-1.423-1.693-1.59-1.979-.166-.285-.018-.44.124-.581.129-.127.285-.333.428-.5.143-.166.19-.285.285-.476.095-.19.048-.357-.024-.5-.071-.143-.641-1.543-.878-2.112-.23-.556-.464-.48-.641-.489-.166-.008-.357-.01-.548-.01s-.5.071-.762.357c-.261.285-1 .976-1 2.38s1.023 2.761 1.166 2.952c.143.19 2.013 3.074 4.877 4.312.681.295 1.213.471 1.628.603.684.218 1.307.187 1.8.114.549-.081 1.687-.69 1.925-1.357.237-.667.237-1.238.166-1.357-.07-.119-.261-.19-.546-.333z"/>
+                                    </svg>
+                                </div>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">WhatsApp</h3>
+                            </a>
+
                             {/* Instagram */}
                             <a 
                                 href={links.instagram} 
@@ -446,17 +467,34 @@
                                 <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Instagram</h3>
                             </a>
 
-                            {/* Culture Website */}
+                            {/* Telegram Box */}
                             <a 
-                                href={links.culture} 
+                                href={links.telegram || '#'} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="neo-embossed neo-interactive p-4 flex flex-col items-center justify-center"
+                                className={`neo-embossed p-4 flex flex-col items-center justify-center ${links.telegram ? 'neo-interactive' : 'opacity-40 cursor-not-allowed shadow-none border border-pink-400'}`}
+                                onClick={(e) => !links.telegram && e.preventDefault()}
+                            >
+                                <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center rotate-6 text-2xl">
+                                    <svg className="w-6 h-6 text-[#0088cc]" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.56 8.18l-1.92 9.04c-.14.63-.52.79-1.05.49l-2.93-2.16-1.41 1.36c-.16.16-.29.29-.6.29l.21-2.99 5.44-4.92c.24-.21-.05-.33-.37-.12l-6.73 4.24-2.9-.91c-.63-.2-1.09-.52-.16-.89l11.31-4.36c.52-.2.98.11.86.88z"/>
+                                    </svg>
+                                </div>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Telegram</h3>
+                            </a>
+
+                            {/* Website Box */}
+                            <a 
+                                href={links.website || '#'} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={`neo-embossed p-4 flex flex-col items-center justify-center ${links.website ? 'neo-interactive' : 'opacity-40 cursor-not-allowed shadow-none border border-pink-400'}`}
+                                onClick={(e) => !links.website && e.preventDefault()}
                             >
                                 <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center -rotate-3 text-2xl">
-                                    🏺
+                                    🌐
                                 </div>
-                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Our Culture</h3>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Our Website</h3>
                             </a>
 
                             {/* Meesho Shop */}
@@ -512,6 +550,20 @@
                                     🔥
                                 </div>
                                 <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">Hot Deals</h3>
+                            </a>
+
+                            {/* New Releases link */}
+                            <a 
+                                href={links.new_releases || '#'} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={`neo-embossed p-4 flex flex-col items-center justify-center ${links.new_releases ? 'neo-interactive' : 'opacity-40 cursor-not-allowed shadow-none border border-pink-400'}`}
+                                onClick={(e) => !links.new_releases && e.preventDefault()}
+                            >
+                                <div className="w-11 h-11 neo-recessed mb-2 flex items-center justify-center rotate-3 text-2xl">
+                                    ✨
+                                </div>
+                                <h3 className="text-xs font-black text-[#4C0020] uppercase tracking-wider text-center">New Arrivals</h3>
                             </a>
 
                         </div>
